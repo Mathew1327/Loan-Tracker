@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
+import './ReferLoan.css'; // Importing external CSS
 
 const ReferLoan = () => {
   const [formData, setFormData] = useState({
@@ -73,10 +74,10 @@ const ReferLoan = () => {
   };
 
   return (
-    <div className="p-8 bg-white shadow-lg rounded-lg">
-      <h2 className="text-3xl font-bold text-blue-700 mb-6">📩 Refer a Loan</h2>
+    <div className="refer-loan-container">
+      <h2 className="refer-loan-title">📩 Refer a Loan</h2>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <form onSubmit={handleSubmit} className="refer-loan-form">
         <input
           type="text"
           name="first_name"
@@ -187,7 +188,7 @@ const ReferLoan = () => {
         />
         <button
           type="submit"
-          className="col-span-1 md:col-span-2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+          className="submit-btn"
         >
           📤 Submit Referral
         </button>

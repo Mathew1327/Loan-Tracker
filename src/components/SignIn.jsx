@@ -43,6 +43,21 @@ const SignIn = ({ onSwitch }) => {
     else setRoleError("Unknown role");
   };
 
+  const handleForgotPassword = async () => {
+    const userEmail = prompt("Enter your email to reset password:");
+    if (!userEmail) return;
+
+    const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
+      redirectTo: "http://localhost:5173/update-password", // Update based on your environment
+    });
+
+    if (error) {
+      alert("Error sending reset link: " + error.message);
+    } else {
+      alert("Password reset link has been sent to your email.");
+    }
+  };
+
   return (
     <div className="auth-container">
       <div className="form-box">
@@ -65,6 +80,17 @@ const SignIn = ({ onSwitch }) => {
           {roleError && <p className="error">{roleError}</p>}
           <button type="submit">Login</button>
         </form>
+
+        <p className="text-sm text-right">
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            className="text-blue-600 hover:underline"
+          >
+            Forgot Password?
+          </button>
+        </p>
+
         <span onClick={onSwitch}>New user? Create account</span>
       </div>
     </div>
@@ -72,3 +98,4 @@ const SignIn = ({ onSwitch }) => {
 };
 
 export default SignIn;
+  

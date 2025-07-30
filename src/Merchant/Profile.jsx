@@ -10,6 +10,7 @@ const Profile = () => {
     sign_up_as: "",
   });
   const [loading, setLoading] = useState(true);
+  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -55,6 +56,7 @@ const Profile = () => {
       alert("Failed to update profile");
     } else {
       alert("Profile updated successfully!");
+      setEditMode(false); // exit edit mode after save
     }
   };
 
@@ -63,6 +65,8 @@ const Profile = () => {
   return (
     <div style={{ maxWidth: "500px", margin: "0 auto", background: "#fff", padding: "2rem", borderRadius: "8px" }}>
       <h2 style={{ marginBottom: "1.5rem" }}>My Profile</h2>
+
+      {/* Username */}
       <div style={{ marginBottom: "1rem" }}>
         <label>Username</label>
         <input
@@ -71,12 +75,17 @@ const Profile = () => {
           value={profile.username}
           onChange={handleChange}
           className="input"
+          disabled={!editMode}
         />
       </div>
+
+      {/* Email */}
       <div style={{ marginBottom: "1rem" }}>
         <label>Email (read-only)</label>
         <input type="text" value={profile.email} readOnly className="input" />
       </div>
+
+      {/* Phone */}
       <div style={{ marginBottom: "1rem" }}>
         <label>Phone</label>
         <input
@@ -85,8 +94,11 @@ const Profile = () => {
           value={profile.phone}
           onChange={handleChange}
           className="input"
+          disabled={!editMode}
         />
       </div>
+
+      {/* Age */}
       <div style={{ marginBottom: "1rem" }}>
         <label>Age</label>
         <input
@@ -95,25 +107,62 @@ const Profile = () => {
           value={profile.age}
           onChange={handleChange}
           className="input"
+          disabled={!editMode}
         />
       </div>
+
+      {/* Role */}
       <div style={{ marginBottom: "1rem" }}>
         <label>Role (read-only)</label>
         <input type="text" value={profile.sign_up_as} readOnly className="input" />
       </div>
-      <button
-        onClick={handleSave}
-        style={{
-          padding: "10px 20px",
-          background: "#2563eb",
-          color: "#fff",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
-        Save
-      </button>
+
+      {/* Buttons */}
+      {!editMode ? (
+        <button
+          onClick={() => setEditMode(true)}
+          style={{
+            padding: "10px 20px",
+            background: "#4CAF50",
+            color: "#fff",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Edit Profile
+        </button>
+      ) : (
+        <>
+          <button
+            onClick={handleSave}
+            style={{
+              padding: "10px 20px",
+              background: "#2563eb",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              marginRight: "10px",
+            }}
+          >
+            Save
+          </button>
+          <button
+            onClick={() => setEditMode(false)}
+            style={{
+              padding: "10px 20px",
+              background: "#aaa",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+        </>
+      )}
     </div>
   );
 };

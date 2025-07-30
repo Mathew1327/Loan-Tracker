@@ -1,82 +1,179 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase";
+import "./LoanStatus.css";
 
 const LoanStatus = () => {
   const [allLoans, setAllLoans] = useState([]);
   const [approvedLoans, setApprovedLoans] = useState([]);
-  const [selectedApproved, setSelectedApproved] = useState(null);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [selectedLoan, setSelectedLoan] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [documentFiles, setDocumentFiles] = useState({});
+  const [merchantId, setMerchantId] = useState(null);
+
+  const documentLabels = [
+    "Aadhar Image",
+    "EB Bill / Gas Bill / Any Tax Receipt",
+    "Appraisal Slip",
+    "Upload the Invoice",
+    "Upload Gold Product Live Photo from Weighing and Purity Machine",
+    "Upload PAN",
+    "Upload 6 Months Bank Statement",
+    "Upload Income Proof / Salary Slip",
+    "Upload Address Proof",
+    "Other Document",
+  ];
 
   useEffect(() => {
-    fetchLoans();
+    fetchMerchantAndLoans();
   }, []);
 
-  const fetchLoans = async () => {
-    const { data, error } = await supabase.from("loans").select("*");
-    if (!error) {
-      setAllLoans(data.filter((loan) => loan.review_status !== "approved"));
-      setApprovedLoans(data.filter((loan) => loan.review_status === "approved"));
+  const fetchMerchantAndLoans = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) return;
+
+    const { data: profile, error: profileError } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError || !profile) return;
+
+    setMerchantId(profile.id);
+
+    const { data: loansData, error: loansError } = await supabase
+      .from("loans")
+      .select("*")
+      .eq("referred_by", profile.id);
+
+    if (!loansError && loansData) {
+      setAllLoans(loansData.filter((loan) => loan.review_status !== "approved"));
+      setApprovedLoans(loansData.filter((loan) => loan.review_status === "approved"));
     } else {
-      console.error("Error fetching loans:", error);
+      console.error("Error fetching loans:", loansError);
     }
   };
 
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files).slice(0, 10);
-    setUploadedFiles(files);
+  const handleDocumentChange = (label, file) => {
+    if (file && file.size > 5 * 1024 * 1024) {
+      alert("File exceeds 5MB limit");
+      return;
+    }
+    setDocumentFiles((prev) => ({ ...prev, [label]: file }));
   };
 
   const uploadDocuments = async () => {
+    if (!selectedLoan) return;
+
     setUploading(true);
+    const urls = {};
 
-    const uploadedUrls = [];
+    for (let label of documentLabels) {
+      const file = documentFiles[label];
+      if (!file) continue;
 
-    for (let file of uploadedFiles) {
-      const fileExt = file.name.split(".").pop();
-      const filePath = `documents/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const ext = file.name.split(".").pop();
+      const filePath = `documents/${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from("documents")
         .upload(filePath, file);
 
       if (uploadError) {
-        alert("Failed to upload some files");
+        alert(`Failed to upload ${label}`);
         console.error(uploadError);
         setUploading(false);
         return;
       }
 
       const { data } = supabase.storage.from("documents").getPublicUrl(filePath);
-      uploadedUrls.push(data.publicUrl);
+      urls[label] = data.publicUrl;
     }
 
-    // Save public URLs in the `loans` table
     const { error: updateError } = await supabase
       .from("loans")
-      .update({ documents: uploadedUrls })
-      .eq("id", selectedApproved.id);
+      .update({ documents: urls })
+      .eq("id", selectedLoan.id);
 
     if (updateError) {
       alert("Failed to save documents to database");
       console.error(updateError);
     } else {
       alert("Documents uploaded successfully!");
-      setSelectedApproved(null);
-      fetchLoans();
+      setSelectedLoan(null);
+      fetchMerchantAndLoans();
+      setDocumentFiles({});
     }
 
     setUploading(false);
   };
 
+  const statusClass = (status) => {
+    const lower = status?.toLowerCase();
+    if (lower === "approved") return "status-tag status-approved";
+    if (lower === "pending") return "status-tag status-pending";
+    if (lower === "rejected") return "status-tag status-rejected";
+    if (lower === "under review") return "status-tag status-review";
+    return "status-tag";
+  };
+
+  const renderModal = () => {
+    if (!selectedLoan) return null;
+
+    const { first_name, last_name, email, phone, address, loan_amount, created_at, review_status } = selectedLoan;
+
+    return (
+      <div className="modal-overlay">
+        <div className="modal-box scrollable-modal">
+          <h3>Applicant Details</h3>
+          <p><strong>Name:</strong> {first_name} {last_name}</p>
+          <p><strong>Email:</strong> {email || "N/A"}</p>
+          <p><strong>Phone:</strong> {phone || "N/A"}</p>
+          <p><strong>Address:</strong> {address || "N/A"}</p>
+          <p><strong>Loan Amount:</strong> ₹{loan_amount}</p>
+          <p><strong>Application Date:</strong> {created_at?.split("T")[0]}</p>
+          <p><strong>Status:</strong> {review_status}</p>
+
+          {review_status.toLowerCase() === "approved" && (
+            <>
+              <h4 style={{ marginTop: "20px" }}>Upload Documents</h4>
+              <div className="document-grid">
+                {documentLabels.map((label, idx) => (
+                  <div className="document-upload-box" key={idx}>
+                    <label>{label}</label>
+                    <input
+                      type="file"
+                      onChange={(e) => handleDocumentChange(label, e.target.files[0])}
+                      accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+                    />
+                    <span className="file-hint">Max 5MB</span>
+                  </div>
+                ))}
+              </div>
+              <button className="upload-btn" onClick={uploadDocuments} disabled={uploading}>
+                {uploading ? "Uploading..." : "Upload Documents"}
+              </button>
+            </>
+          )}
+
+          <button className="close-btn" onClick={() => setSelectedLoan(null)}>Close</button>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div>
+    <div className="loan-page">
       <h2>Loan Applicants</h2>
-      <table>
+      <table className="loan-table">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Applicant Name</th>
             <th>Loan Amount</th>
+            <th>Application Date</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
@@ -86,20 +183,21 @@ const LoanStatus = () => {
             <tr key={loan.id}>
               <td>{loan.first_name} {loan.last_name}</td>
               <td>₹{loan.loan_amount}</td>
-              <td>{loan.review_status}</td>
+              <td>{loan.created_at?.split("T")[0]}</td>
+              <td><span className={statusClass(loan.review_status)}>{loan.review_status}</span></td>
               <td>
-                <button onClick={() => alert("View pending not required here")}>View Details</button>
+                <button className="action-btn" onClick={() => setSelectedLoan(loan)}>View Details</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <h2 style={{ marginTop: "2rem" }}>Approved Loan Applications</h2>
-      <table>
+      <h2>Approved Loan Applications</h2>
+      <table className="loan-table">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Applicant Name</th>
             <th>Loan Amount</th>
             <th>Documents</th>
             <th>Action</th>
@@ -110,35 +208,16 @@ const LoanStatus = () => {
             <tr key={loan.id}>
               <td>{loan.first_name} {loan.last_name}</td>
               <td>₹{loan.loan_amount}</td>
-              <td>{loan.documents?.length || 0} uploaded</td>
+              <td>{loan.documents ? Object.keys(loan.documents).length : 0} uploaded</td>
               <td>
-                <button onClick={() => setSelectedApproved(loan)}>View Details</button>
+                <button className="action-btn" onClick={() => setSelectedLoan(loan)}>View Details</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {selectedApproved && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>{selectedApproved.first_name} {selectedApproved.last_name} - Upload Documents</h3>
-            <input
-              type="file"
-              multiple
-              onChange={handleFileChange}
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-            />
-            <p>Max 10 files allowed</p>
-            <div style={{ marginTop: "1rem" }}>
-              <button onClick={uploadDocuments} disabled={uploading}>
-                {uploading ? "Uploading..." : "Upload"}
-              </button>
-              <button onClick={() => setSelectedApproved(null)}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {renderModal()}
     </div>
   );
 };

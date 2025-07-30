@@ -1,29 +1,31 @@
 import React, { useEffect, useState } from "react";
+import LoanApplicants from "./LoanApplicants";
+import ApprovedLoans from "./ApprovedLoans";
+import { Pie } from "react-chartjs-2";
 import { supabase } from "../supabase";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import "./NBFCAdminDashboard.css";
 
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 const NBFCAdminDashboard = () => {
-  const [loans, setLoans] = useState([]);
-  const [selectedLoan, setSelectedLoan] = useState(null);
-  const [showProfile, setShowProfile] = useState(false);
-  const [profileData, setProfileData] = useState(null);
-  const [editingProfile, setEditingProfile] = useState(false);
+  const [activeTab, setActiveTab] = useState("loanApplicants");
+  const [profile, setProfile] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [chartData, setChartData] = useState(null);
 
   useEffect(() => {
-    fetchLoans();
     fetchProfile();
+    fetchLoanStats();
   }, []);
 
-  const fetchLoans = async () => {
-    const { data, error } = await supabase.from("loans").select("*");
-    if (!error) setLoans(data);
-    else console.error("Error fetching loans", error);
-  };
-
   const fetchProfile = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
       const { data, error } = await supabase
@@ -31,147 +33,164 @@ const NBFCAdminDashboard = () => {
         .select("*")
         .eq("id", user.id)
         .single();
-      if (!error) setProfileData(data);
+
+      if (!error) {
+        setProfile(data);
+      }
     }
   };
 
-  const updateProfile = async () => {
+  const handleProfileChange = (e) => {
+    setProfile({ ...profile, [e.target.name]: e.target.value });
+  };
+
+  const saveProfile = async () => {
     const { error } = await supabase
       .from("user_profiles")
       .update({
-        username: profileData.username,
-        phone: profileData.phone,
-        age: profileData.age,
+        username: profile.username,
+        phone: profile.phone,
+        age: profile.age,
       })
-      .eq("id", profileData.id);
+      .eq("id", profile.id);
 
     if (!error) {
-      alert("Profile updated successfully");
-      setEditingProfile(false);
+      alert("Profile updated");
+      setEditMode(false);
     } else {
-      alert("Failed to update profile");
+      alert("Error updating profile");
     }
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.reload();
+    window.location.href = "/";
+  };
+
+  const fetchLoanStats = async () => {
+    const { data, error } = await supabase
+      .from("loans")
+      .select("loan_purpose");
+
+    if (error || !data) return;
+
+    const purposeCount = {};
+    data.forEach((loan) => {
+      const type = loan.loan_purpose || "Other";
+      purposeCount[type] = (purposeCount[type] || 0) + 1;
+    });
+
+    setChartData({
+      labels: Object.keys(purposeCount),
+      datasets: [
+        {
+          label: "Loan Distribution",
+          data: Object.values(purposeCount),
+          backgroundColor: [
+            "#36A2EB",
+            "#FFCE56",
+            "#FF6384",
+            "#4BC0C0",
+            "#9966FF",
+            "#FF9F40",
+          ],
+        },
+      ],
+    });
   };
 
   return (
-    <div className="admin-dashboard">
-      <div className="header">
-        <h1>Loan Applicants</h1>
-        <div className="profile-icon" onClick={() => setShowProfile(true)}>
-          👤
-        </div>
+    <div className="admin-dashboard-container">
+      <div className="sidebar">
+        <h2>NBFC Admin</h2>
+        <ul>
+          <li
+            className={activeTab === "loanApplicants" ? "active" : ""}
+            onClick={() => setActiveTab("loanApplicants")}
+          >
+            Loan Applicants
+          </li>
+          <li
+            className={activeTab === "approvedLoans" ? "active" : ""}
+            onClick={() => setActiveTab("approvedLoans")}
+          >
+            Approved Loans
+          </li>
+          <li
+            className={activeTab === "loanInsights" ? "active" : ""}
+            onClick={() => setActiveTab("loanInsights")}
+          >
+            Loan Insights
+          </li>
+          <li
+            className={activeTab === "profile" ? "active" : ""}
+            onClick={() => setActiveTab("profile")}
+          >
+            Profile
+          </li>
+          <li onClick={handleLogout}>Logout</li>
+        </ul>
       </div>
 
-      <table className="loan-table">
-        <thead>
-          <tr>
-            <th>Applicant Name</th>
-            <th>Loan Amount</th>
-            <th>Application Date</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loans.map((loan) => (
-            <tr key={loan.id}>
-              <td>{`${loan.first_name} ${loan.last_name}`}</td>
-              <td>${Number(loan.loan_amount).toLocaleString()}</td>
-              <td>{loan.created_at?.split("T")[0]}</td>
-              <td>
-                <span className={`status-badge ${loan.review_status}`}>
-                  {loan.review_status}
-                </span>
-              </td>
-              <td>
-                <button onClick={() => setSelectedLoan(loan)}>View Details</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="main-content">
+        {activeTab === "loanApplicants" && <LoanApplicants />}
+        {activeTab === "approvedLoans" && <ApprovedLoans />}
 
-      {selectedLoan && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2>Applicant Details</h2>
-            <p><strong>Name:</strong> {selectedLoan.first_name} {selectedLoan.last_name}</p>
-            <p><strong>Email:</strong> {selectedLoan.email || "N/A"}</p>
-            <p><strong>Phone:</strong> {selectedLoan.phone}</p>
-            <p><strong>Address:</strong> {selectedLoan.address}</p>
-            <p><strong>Loan Amount:</strong> ${Number(selectedLoan.loan_amount).toLocaleString()}</p>
-            <p><strong>Application Date:</strong> {selectedLoan.created_at?.split("T")[0]}</p>
-            <p><strong>Status:</strong> {selectedLoan.review_status}</p>
-            <div className="modal-actions">
-              <button className="approve" onClick={() => updateLoanStatus(selectedLoan.id, "approved")}>Approve</button>
-              <button className="reject" onClick={() => updateLoanStatus(selectedLoan.id, "rejected")}>Reject</button>
-              <button className="close" onClick={() => setSelectedLoan(null)}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showProfile && profileData && (
-        <div className="modal">
-          <div className="modal-content">
-            <h2>Admin Profile</h2>
-            {editingProfile ? (
-              <>
-                <label>Username:</label>
-                <input
-                  type="text"
-                  value={profileData.username}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, username: e.target.value })
-                  }
-                />
-                <label>Email:</label>
-                <input type="email" value={profileData.email} disabled />
-                <label>Sign Up As:</label>
-                <input type="text" value={profileData.sign_up_as} disabled />
-                <label>Phone:</label>
-                <input
-                  type="text"
-                  value={profileData.phone || ""}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, phone: e.target.value })
-                  }
-                />
-                <label>Age:</label>
-                <input
-                  type="number"
-                  value={profileData.age || ""}
-                  onChange={(e) =>
-                    setProfileData({ ...profileData, age: e.target.value })
-                  }
-                />
-                <div className="modal-actions">
-                  <button onClick={updateProfile}>Save</button>
-                  <button onClick={() => setEditingProfile(false)}>Cancel</button>
-                </div>
-              </>
+        {activeTab === "loanInsights" && (
+          <div className="chart-container">
+            <h3>Loan Type Distribution</h3>
+            {chartData ? (
+              <Pie data={chartData} />
             ) : (
-              <>
-                <p><strong>Username:</strong> {profileData.username}</p>
-                <p><strong>Email:</strong> {profileData.email}</p>
-                <p><strong>Sign Up As:</strong> {profileData.sign_up_as}</p>
-                <p><strong>Phone:</strong> {profileData.phone || "N/A"}</p>
-                <p><strong>Age:</strong> {profileData.age || "N/A"}</p>
-                <div className="modal-actions">
-                  <button onClick={() => setEditingProfile(true)}>Edit</button>
-                  <button onClick={() => setShowProfile(false)}>Close</button>
-                  <button className="logout-btn" onClick={handleLogout}>Logout</button>
-                </div>
-              </>
+              <p>Loading chart...</p>
             )}
           </div>
-        </div>
-      )}
+        )}
+
+        {activeTab === "profile" && profile && (
+          <div className="profile-form">
+            <h3>My Profile</h3>
+            <div className="profile-field">
+              <label>Username</label>
+              <input
+                name="username"
+                value={profile.username}
+                disabled={!editMode}
+                onChange={handleProfileChange}
+              />
+            </div>
+            <div className="profile-field">
+              <label>Email</label>
+              <input value={profile.email} disabled />
+            </div>
+            <div className="profile-field">
+              <label>Phone</label>
+              <input
+                name="phone"
+                value={profile.phone}
+                disabled={!editMode}
+                onChange={handleProfileChange}
+              />
+            </div>
+            <div className="profile-field">
+              <label>Age</label>
+              <input
+                name="age"
+                value={profile.age}
+                type="number"
+                disabled={!editMode}
+                onChange={handleProfileChange}
+              />
+            </div>
+
+            {editMode ? (
+              <button onClick={saveProfile}>Save</button>
+            ) : (
+              <button onClick={() => setEditMode(true)}>Edit</button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

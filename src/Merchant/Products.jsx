@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
+import './Products.css'; // Light-themed custom CSS
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -8,6 +9,13 @@ const Products = () => {
     description: '',
     price: ''
   });
+
+  const [merchantDetails, setMerchantDetails] = useState({
+    shop_name: '',
+    gstin: '',
+    shop_address: ''
+  });
+
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
@@ -17,39 +25,56 @@ const Products = () => {
   useEffect(() => {
     if (userId) {
       fetchProducts();
+      fetchMerchantDetails();
     }
   }, [userId]);
 
   const getUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      setUserId(user.id);
-    }
+    if (user) setUserId(user.id);
   };
 
   const fetchProducts = async () => {
     const { data, error } = await supabase
       .from('products')
       .select('*')
-      .eq('user_id', userId); // Only fetch user's products
+      .eq('user_id', userId);
 
-    if (error) {
-      console.error('Error fetching products:', error.message);
-    } else {
-      setProducts(data);
-    }
+    if (error) console.error('Error fetching products:', error.message);
+    else setProducts(data);
+  };
+
+  const fetchMerchantDetails = async () => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('shop_name, gstin, shop_address')
+      .eq('id', userId)
+      .single();
+
+    if (data) setMerchantDetails(data);
+    if (error) console.error('Error fetching merchant details:', error.message);
+  };
+
+  const updateMerchantDetails = async () => {
+    const { error } = await supabase
+      .from('user_profiles')
+      .update(merchantDetails)
+      .eq('id', userId);
+
+    if (error) alert("Failed to update merchant details");
+    else alert("Merchant details updated");
   };
 
   const handleChange = (e) => {
     setNewProduct({ ...newProduct, [e.target.name]: e.target.value });
   };
 
+  const handleMerchantChange = (e) => {
+    setMerchantDetails({ ...merchantDetails, [e.target.name]: e.target.value });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!userId) {
-      alert('User not authenticated');
-      return;
-    }
 
     const productData = {
       ...newProduct,
@@ -74,93 +99,58 @@ const Products = () => {
       .delete()
       .eq('product_id', productId);
 
-    if (error) {
-      console.error('Error deleting product:', error.message);
-    } else {
-      setProducts(products.filter((p) => p.product_id !== productId));
-    }
+    if (error) console.error('Error deleting product:', error.message);
+    else setProducts(products.filter((p) => p.product_id !== productId));
   };
 
   return (
-    <div className="p-6 bg-white shadow-lg rounded-md">
-      <h2 className="text-3xl font-bold mb-6 text-blue-700">🛍️ Add New Product</h2>
+    <div className="product-container">
+      <h2 className="title">🛍️ Add New Product</h2>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-        <input
-          type="text"
-          name="name"
-          placeholder="Product Name"
-          value={newProduct.name}
-          onChange={handleChange}
-          className="border border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          required
-        />
-        <input
-          type="text"
-          name="description"
-          placeholder="Description"
-          value={newProduct.description}
-          onChange={handleChange}
-          className="border border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          required
-        />
-        <input
-          type="number"
-          name="price"
-          placeholder="Price (₹)"
-          value={newProduct.price}
-          onChange={handleChange}
-          className="border border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          required
-        />
-        <button
-          type="submit"
-          className="col-span-1 md:col-span-3 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-        >
-          ➕ Add Product
-        </button>
+      <form onSubmit={handleSubmit} className="product-form">
+        <input type="text" name="name" placeholder="Product Name" value={newProduct.name} onChange={handleChange} required />
+        <input type="text" name="description" placeholder="Description" value={newProduct.description} onChange={handleChange} required />
+        <input type="number" name="price" placeholder="Price (₹)" value={newProduct.price} onChange={handleChange} required />
+        <button type="submit">➕ Add Product</button>
       </form>
 
-      <h2 className="text-2xl font-semibold mb-4 text-gray-700">📦 Available Products</h2>
+      <h2 className="subtitle">🏪 Merchant Details</h2>
+      <form className="merchant-form" onSubmit={(e) => { e.preventDefault(); updateMerchantDetails(); }}>
+        <input type="text" name="shop_name" placeholder="Shop Name" value={merchantDetails.shop_name} onChange={handleMerchantChange} required />
+        <input type="text" name="gstin" placeholder="GSTIN Number" value={merchantDetails.gstin} onChange={handleMerchantChange} required />
+        <input type="text" name="shop_address" placeholder="Shop Address" value={merchantDetails.shop_address} onChange={handleMerchantChange} required />
+        <button type="submit">💾 Save Merchant Info</button>
+      </form>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full table-auto border-collapse border border-gray-200 rounded-lg shadow">
-          <thead className="bg-blue-50 text-blue-800">
-            <tr>
-              <th className="px-6 py-3 border text-left">#</th>
-              <th className="px-6 py-3 border text-left">Name</th>
-              <th className="px-6 py-3 border text-left">Description</th>
-              <th className="px-6 py-3 border text-left">Price (₹)</th>
-              <th className="px-6 py-3 border text-left">Action</th>
-            </tr>
-          </thead>
-          <tbody className="text-gray-700">
-            {products.map((prod, index) => (
-              <tr key={prod.product_id} className="hover:bg-gray-100 transition">
-                <td className="px-6 py-4 border">{index + 1}</td>
-                <td className="px-6 py-4 border">{prod.name}</td>
-                <td className="px-6 py-4 border">{prod.description}</td>
-                <td className="px-6 py-4 border">₹{prod.price}</td>
-                <td className="px-6 py-4 border">
-                  <button
-                    onClick={() => handleDelete(prod.product_id)}
-                    className="text-white bg-red-500 px-3 py-1 rounded hover:bg-red-600 transition"
-                  >
-                    🗑 Delete
-                  </button>
+      <h2 className="subtitle">📦 Available Products</h2>
+      <table className="product-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Price (₹)</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.length > 0 ? (
+            products.map((prod, index) => (
+              <tr key={prod.product_id}>
+                <td>{index + 1}</td>
+                <td>{prod.name}</td>
+                <td>{prod.description}</td>
+                <td>₹{prod.price}</td>
+                <td>
+                  <button className="delete-btn" onClick={() => handleDelete(prod.product_id)}>🗑 Delete</button>
                 </td>
               </tr>
-            ))}
-            {products.length === 0 && (
-              <tr>
-                <td colSpan="5" className="text-center py-6 text-gray-500">
-                  No products added yet.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            ))
+          ) : (
+            <tr><td colSpan="5" className="no-data">No products added yet.</td></tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };
