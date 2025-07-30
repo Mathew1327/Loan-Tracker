@@ -76,15 +76,17 @@ const LoanBorrowerDashboard = () => {
     e.preventDefault();
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from("loans").insert([
-      {
-        ...formData,
-        user_id: user.id,
-        age: parseInt(formData.age),
-        monthly_income: parseFloat(formData.monthly_income),
-        loan_amount: parseFloat(formData.loan_amount),
-      },
-    ]);
+    const submission = {
+      ...formData,
+      user_id: user.id,
+      age: parseInt(formData.age),
+      monthly_income: parseFloat(formData.monthly_income),
+      loan_amount: parseFloat(formData.loan_amount),
+      review_status: "pending",          // Set default
+      referred_by: null                  // Set null if not referred
+    };
+
+    const { error } = await supabase.from("loans").insert([submission]);
 
     if (!error) {
       alert("Loan Application Submitted");
@@ -103,7 +105,9 @@ const LoanBorrowerDashboard = () => {
         pan_number: "",
       });
     } else {
-      alert("Submission Failed");
+      console.error("Loan insert error:", error);
+      console.log("Submitted data:", submission);
+      alert("Submission Failed: " + error.message);
     }
   };
 
@@ -140,8 +144,7 @@ const LoanBorrowerDashboard = () => {
           <div className="loan-form">
             <h2>Apply for Loan</h2>
             <form onSubmit={handleLoanSubmit}>
-              {[
-                { name: "first_name", placeholder: "First Name" },
+              {[{ name: "first_name", placeholder: "First Name" },
                 { name: "last_name", placeholder: "Last Name" },
                 { name: "dob", placeholder: "Date of Birth", type: "date" },
                 { name: "phone", placeholder: "Phone" },
@@ -152,17 +155,16 @@ const LoanBorrowerDashboard = () => {
                 { name: "loan_amount", placeholder: "Loan Amount", type: "number" },
                 { name: "loan_purpose", placeholder: "Loan Purpose" },
                 { name: "aadhaar_number", placeholder: "Aadhaar Number" },
-                { name: "pan_number", placeholder: "PAN Number" },
-              ].map(({ name, placeholder, type = "text" }) => (
-                <input
-                  key={name}
-                  name={name}
-                  type={type}
-                  placeholder={placeholder}
-                  value={formData[name]}
-                  onChange={handleLoanChange}
-                  required
-                />
+                { name: "pan_number", placeholder: "PAN Number" }].map(({ name, placeholder, type = "text" }) => (
+                  <input
+                    key={name}
+                    name={name}
+                    type={type}
+                    placeholder={placeholder}
+                    value={formData[name]}
+                    onChange={handleLoanChange}
+                    required
+                  />
               ))}
               <button type="submit">Submit Loan Application</button>
             </form>
