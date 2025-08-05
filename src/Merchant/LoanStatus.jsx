@@ -50,8 +50,8 @@ const LoanStatus = () => {
       .eq("referred_by", profile.id);
 
     if (!loansError && loansData) {
-      setAllLoans(loansData.filter((loan) => loan.review_status !== "approved"));
-      setApprovedLoans(loansData.filter((loan) => loan.review_status === "approved"));
+      setAllLoans(loansData.filter((loan) => loan.status !== "approved"));
+      setApprovedLoans(loansData.filter((loan) => loan.status === "approved"));
     } else {
       console.error("Error fetching loans:", loansError);
     }
@@ -123,7 +123,7 @@ const LoanStatus = () => {
   const renderModal = () => {
     if (!selectedLoan) return null;
 
-    const { first_name, last_name, email, phone, address, loan_amount, created_at, review_status } = selectedLoan;
+    const { first_name, last_name, email, phone, address, loan_amount, created_at, status } = selectedLoan;
 
     return (
       <div className="modal-overlay">
@@ -135,9 +135,9 @@ const LoanStatus = () => {
           <p><strong>Address:</strong> {address || "N/A"}</p>
           <p><strong>Loan Amount:</strong> ₹{loan_amount}</p>
           <p><strong>Application Date:</strong> {created_at?.split("T")[0]}</p>
-          <p><strong>Status:</strong> {review_status}</p>
+          <p><strong>Status:</strong> {status}</p>
 
-          {review_status.toLowerCase() === "approved" && (
+          {status.toLowerCase() === "approved" && (
             <>
               <h4 style={{ marginTop: "20px" }}>Upload Documents</h4>
               <div className="document-grid">
@@ -184,7 +184,7 @@ const LoanStatus = () => {
               <td>{loan.first_name} {loan.last_name}</td>
               <td>₹{loan.loan_amount}</td>
               <td>{loan.created_at?.split("T")[0]}</td>
-              <td><span className={statusClass(loan.review_status)}>{loan.review_status}</span></td>
+              <td><span className={statusClass(loan.status)}>{loan.status}</span></td>
               <td>
                 <button className="action-btn" onClick={() => setSelectedLoan(loan)}>View Details</button>
               </td>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
-import './ReferLoan.css'; // Importing external CSS
+import './ReferLoan.css';
 
 const ReferLoan = () => {
   const [formData, setFormData] = useState({
@@ -55,7 +55,7 @@ const ReferLoan = () => {
       console.error('Error submitting referral:', error.message);
       alert('Failed to refer loan.');
     } else {
-      alert('Loan referral submitted successfully!');
+      alert('✅ Loan referral submitted successfully!');
       setFormData({
         first_name: '',
         last_name: '',
@@ -74,124 +74,26 @@ const ReferLoan = () => {
   };
 
   return (
-    <div className="refer-loan-container">
+    <div className="refer-loan-container animate-fade-in">
       <h2 className="refer-loan-title">📩 Refer a Loan</h2>
 
       <form onSubmit={handleSubmit} className="refer-loan-form">
-        <input
-          type="text"
-          name="first_name"
-          placeholder="First Name"
-          value={formData.first_name}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <input
-          type="text"
-          name="last_name"
-          placeholder="Last Name"
-          value={formData.last_name}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <input
-          type="date"
-          name="dob"
-          placeholder="Date of Birth"
-          value={formData.dob}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <input
-          type="text"
-          name="phone"
-          placeholder="Phone Number"
-          value={formData.phone}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <input
-          type="text"
-          name="address"
-          placeholder="Address"
-          value={formData.address}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <input
-          type="text"
-          name="occupation"
-          placeholder="Occupation"
-          value={formData.occupation}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <input
-          type="number"
-          name="age"
-          placeholder="Age"
-          value={formData.age}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <input
-          type="number"
-          name="monthly_income"
-          placeholder="Monthly Income"
-          value={formData.monthly_income}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <input
-          type="number"
-          name="loan_amount"
-          placeholder="Loan Amount"
-          value={formData.loan_amount}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <input
-          type="text"
-          name="loan_purpose"
-          placeholder="Loan Purpose"
-          value={formData.loan_purpose}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <input
-          type="text"
-          name="aadhaar_number"
-          placeholder="Aadhaar Number"
-          value={formData.aadhaar_number}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <input
-          type="text"
-          name="pan_number"
-          placeholder="PAN Number"
-          value={formData.pan_number}
-          onChange={handleChange}
-          required
-          className="input-style"
-        />
-        <button
-          type="submit"
-          className="submit-btn"
-        >
-          📤 Submit Referral
-        </button>
+        {Object.entries(formData).map(([key, value]) => (
+          <input
+            key={key}
+            type={
+              key === 'dob' ? 'date' :
+              ['age', 'monthly_income', 'loan_amount'].includes(key) ? 'number' : 'text'
+            }
+            name={key}
+            placeholder={key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+            value={value}
+            onChange={handleChange}
+            required
+            className="input-style"
+          />
+        ))}
+        <button type="submit" className="submit-btn">📤 Submit Referral</button>
       </form>
     </div>
   );

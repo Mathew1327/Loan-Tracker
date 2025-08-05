@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabase";
+import "./Profile.css"; // custom CSS file
 
 const Profile = () => {
   const [profile, setProfile] = useState({
@@ -8,7 +9,11 @@ const Profile = () => {
     phone: "",
     age: "",
     sign_up_as: "",
+    shop_name: "",
+    shop_address: "",
+    gst_number: "",
   });
+
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
 
@@ -17,24 +22,21 @@ const Profile = () => {
   }, []);
 
   const fetchProfile = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-    if (user) {
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
 
-      if (error) {
-        alert("Failed to fetch profile");
-      } else {
-        setProfile(data);
-      }
+    if (error) {
+      alert("Failed to fetch profile");
+      console.error(error);
+    } else {
+      setProfile(data);
     }
-
     setLoading(false);
   };
 
@@ -49,120 +51,124 @@ const Profile = () => {
         username: profile.username,
         phone: profile.phone,
         age: profile.age,
+        shop_name: profile.shop_name,
+        shop_address: profile.shop_address,
+        gst_number: profile.gst_number,
       })
       .eq("id", profile.id);
 
     if (error) {
       alert("Failed to update profile");
     } else {
-      alert("Profile updated successfully!");
-      setEditMode(false); // exit edit mode after save
+      alert("✅ Profile updated successfully!");
+      setEditMode(false);
     }
   };
 
-  if (loading) return <p>Loading profile...</p>;
+  if (loading) return <p className="loading">Loading profile...</p>;
 
   return (
-    <div style={{ maxWidth: "500px", margin: "0 auto", background: "#fff", padding: "2rem", borderRadius: "8px" }}>
-      <h2 style={{ marginBottom: "1.5rem" }}>My Profile</h2>
+    <div className="profile-container">
+      <h2 className="profile-title">👤 My Profile</h2>
 
-      {/* Username */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label>Username</label>
-        <input
-          type="text"
-          name="username"
-          value={profile.username}
-          onChange={handleChange}
-          className="input"
-          disabled={!editMode}
-        />
-      </div>
+      <form className="profile-form">
+        {/* Username */}
+        <div className="form-group">
+          <label>Username</label>
+          <input
+            name="username"
+            value={profile.username}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+        </div>
 
-      {/* Email */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label>Email (read-only)</label>
-        <input type="text" value={profile.email} readOnly className="input" />
-      </div>
+        {/* Email (read-only) */}
+        <div className="form-group">
+          <label>Email (read-only)</label>
+          <input value={profile.email} readOnly />
+        </div>
 
-      {/* Phone */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label>Phone</label>
-        <input
-          type="text"
-          name="phone"
-          value={profile.phone}
-          onChange={handleChange}
-          className="input"
-          disabled={!editMode}
-        />
-      </div>
+        {/* Phone */}
+        <div className="form-group">
+          <label>Phone</label>
+          <input
+            name="phone"
+            value={profile.phone}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+        </div>
 
-      {/* Age */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label>Age</label>
-        <input
-          type="number"
-          name="age"
-          value={profile.age}
-          onChange={handleChange}
-          className="input"
-          disabled={!editMode}
-        />
-      </div>
+        {/* Age */}
+        <div className="form-group">
+          <label>Age</label>
+          <input
+            type="number"
+            name="age"
+            value={profile.age}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+        </div>
 
-      {/* Role */}
-      <div style={{ marginBottom: "1rem" }}>
-        <label>Role (read-only)</label>
-        <input type="text" value={profile.sign_up_as} readOnly className="input" />
-      </div>
+        {/* Role (read-only) */}
+        <div className="form-group">
+          <label>Role (read-only)</label>
+          <input value={profile.sign_up_as} readOnly />
+        </div>
 
-      {/* Buttons */}
-      {!editMode ? (
-        <button
-          onClick={() => setEditMode(true)}
-          style={{
-            padding: "10px 20px",
-            background: "#4CAF50",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Edit Profile
-        </button>
-      ) : (
-        <>
-          <button
-            onClick={handleSave}
-            style={{
-              padding: "10px 20px",
-              background: "#2563eb",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              marginRight: "10px",
-            }}
-          >
-            Save
-          </button>
-          <button
-            onClick={() => setEditMode(false)}
-            style={{
-              padding: "10px 20px",
-              background: "#aaa",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            Cancel
-          </button>
-        </>
-      )}
+        {/* Shop Name */}
+        <div className="form-group">
+          <label>Shop Name</label>
+          <input
+            name="shop_name"
+            value={profile.shop_name}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+        </div>
+
+        {/* Shop Address */}
+        <div className="form-group">
+          <label>Shop Address</label>
+          <textarea
+            name="shop_address"
+            value={profile.shop_address}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+        </div>
+
+        {/* GST Number */}
+        <div className="form-group">
+          <label>GST Number</label>
+          <input
+            name="gst_number"
+            value={profile.gst_number}
+            onChange={handleChange}
+            disabled={!editMode}
+          />
+        </div>
+
+        {/* Buttons */}
+        <div className="button-group">
+          {!editMode ? (
+            <button type="button" onClick={() => setEditMode(true)} className="edit-btn">
+              ✏️ Edit Profile
+            </button>
+          ) : (
+            <>
+              <button type="button" onClick={handleSave} className="save-btn">
+                💾 Save
+              </button>
+              <button type="button" onClick={() => setEditMode(false)} className="cancel-btn">
+                ❌ Cancel
+              </button>
+            </>
+          )}
+        </div>
+      </form>
     </div>
   );
 };

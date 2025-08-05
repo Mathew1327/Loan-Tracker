@@ -1,210 +1,195 @@
-.product-container {
-  padding: 30px;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  font-family: 'Segoe UI', sans-serif;
+.products-container {
+  padding: 40px;
+  background: #f8f9fd;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.title,
-.subtitle {
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: #2c3e50;
+.title, .subtitle {
+  font-size: 28px;
+  margin-bottom: 25px;
+  font-weight: 600;
+  color: #1a1a1a;
+  border-left: 5px solid #007bff;
+  padding-left: 15px;
 }
 
-.product-form {
+.dashboard-summary {
   display: flex;
-  gap: 10px;
+  gap: 20px;
+  margin-bottom: 40px;
   flex-wrap: wrap;
-  margin-bottom: 30px;
 }
 
-.product-form input {
-  flex: 1 1 200px;
-  padding: 10px;
+.summary-card {
+  flex: 1;
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  min-width: 220px;
+  transition: all 0.2s ease-in-out;
+}
+
+.summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #555;
+}
+
+.summary-card p {
+  font-size: 28px;
+  font-weight: 700;
+  color: #000;
+  margin-top: 8px;
+}
+
+/* ---------- Form Styles ---------- */
+
+.product-form,
+.merchant-form {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.product-form input,
+.merchant-form input {
+  padding: 14px 16px;
+  font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
 }
 
-.product-form button {
-  padding: 10px 20px;
-  background-color: #5c6bc0;
-  color: #fff;
+.product-form input:focus,
+.merchant-form input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.product-form button,
+.merchant-form button {
+  padding: 14px;
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
   border: none;
-  border-radius: 6px;
-  font-size: 16px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.product-form button:hover {
-  background-color: #3f51b5;
+.product-form button:hover,
+.merchant-form button:hover {
+  background-color: #0056b3;
 }
+
+/* ---------- Table Styles ---------- */
 
 .product-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.product-table th,
-.product-table td {
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  text-align: left;
-}
-
-.product-table th {
-  background-color: #ecf0f1;
-  color: #333;
-}
-
-.product-table tr:hover {
-  background-color: #f1f1f1;
-}
-
-.delete-btn {
-  padding: 5px 10px;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.delete-btn:hover {
-  background-color: #c0392b;
-}
-
-.no-data {
-  text-align: center;
-  padding: 20px;
-  color: #999;
-}
-
-
-.merchant-form input {
-  margin: 8px 8px 8px 0;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  width: calc(33.3% - 10px);
-}
-
-.merchant-form button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-.product-container {
-  padding: 30px;
-  background-color: #f9f9f9;
+  background-color: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
   border-radius: 10px;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.title,
-.subtitle {
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: #2c3e50;
-}
-
-.product-form {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 30px;
-}
-
-.product-form input {
-  flex: 1 1 200px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
-}
-
-.product-form button {
-  padding: 10px 20px;
-  background-color: #5c6bc0;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.product-form button:hover {
-  background-color: #3f51b5;
-}
-
-.product-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
   overflow: hidden;
 }
 
-.product-table th,
-.product-table td {
-  padding: 12px 15px;
-  border: 1px solid #ddd;
+.product-table thead {
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+.product-table th, .product-table td {
+  padding: 16px;
   text-align: left;
+  font-size: 15px;
 }
 
-.product-table th {
-  background-color: #ecf0f1;
-  color: #333;
+.product-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.product-table tr:hover {
-  background-color: #f1f1f1;
+.product-table tbody tr:hover {
+  background-color: #f9f9f9;
 }
 
 .delete-btn {
-  padding: 5px 10px;
-  background-color: #e74c3c;
+  padding: 8px 12px;
+  background-color: #dc3545;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
 }
 
 .delete-btn:hover {
-  background-color: #c0392b;
+  background-color: #c82333;
 }
 
 .no-data {
   text-align: center;
-  padding: 20px;
-  color: #999;
+  color: #888;
+  font-style: italic;
+  padding: 20px 0;
 }
 
-
-.merchant-form input {
-  margin: 8px 8px 8px 0;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  width: calc(33.3% - 10px);
+/* ✅ NEW: Align the Available Products table */
+.product-list {
+  background-color: white;
+  padding: 20px 25px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  max-width: 1000px;
+  margin: 0 auto 50px auto;
 }
 
-.merchant-form button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .dashboard-summary {
+    flex-direction: column;
+  }
+
+  .product-form,
+  .merchant-form {
+    padding: 20px;
+  }
+
+  .title, .subtitle {
+    font-size: 24px;
+  }
+}
+
+.form-section-wrapper {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  align-items: flex-start;
+  margin-bottom: 50px;
+  flex-wrap: wrap;
+}
+
+.product-form,
+.merchant-form {
+  flex: 1;
+  min-width: 300px;
 }

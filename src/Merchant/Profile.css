@@ -1,0 +1,124 @@
+.profile-container {
+  max-width: 600px;
+  margin: 50px auto;
+  background: #1e1e1e; /* Dark background for contrast */
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  font-family: 'Segoe UI', sans-serif;
+  animation: fadeIn 0.6s ease-out;
+  color: #ffffff; /* Default text color */
+}
+
+.profile-title {
+  font-size: 28px;
+  color: #ffffff; /* White heading */
+  font-weight: 700;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 700; /* Bold label */
+  margin-bottom: 6px;
+  color: #ffffff; /* White text */
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 12px;
+  font-size: 15px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background-color: #2c2c2c;
+  color: #ffffff;
+  transition: border 0.3s ease;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #bbbbbb;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #2563eb;
+  outline: none;
+  background: #1a1a1a;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.edit-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.save-btn {
+  background-color: #2563eb;
+  color: white;
+}
+
+.cancel-btn {
+  background-color: #999;
+  color: white;
+}
+
+.edit-btn:hover {
+  background-color: #388e3c;
+}
+
+.save-btn:hover {
+  background-color: #1e40af;
+}
+
+.cancel-btn:hover {
+  background-color: #666;
+}
+
+.loading {
+  text-align: center;
+  margin-top: 50px;
+  color: #cccccc;
+  font-size: 18px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

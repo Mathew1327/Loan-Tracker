@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { supabase } from "../supabase";
 import { useNavigate } from "react-router-dom";
+import "./Auth.css"; // ✅ Apply the common CSS
 
 const SignUp = ({ onSwitch }) => {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ const SignUp = ({ onSwitch }) => {
     password: "",
     phone: "",
     age: "",
-    sign_up_as: "User",
+    sign_up_as: "Loan Borrower",
   });
 
   const handleChange = (e) => {
@@ -45,30 +46,50 @@ const SignUp = ({ onSwitch }) => {
       return;
     }
 
-    if (sign_up_as === "User") navigate("/loan-borrower");
+    if (sign_up_as === "Loan Borrower") navigate("/loan-borrower");
     else if (sign_up_as === "Merchant") navigate("/merchant");
-    else if (sign_up_as === "Admin") navigate("/admin");
+    else if (sign_up_as === "NBFC Admin") navigate("/nbfc-admin");
   };
 
   return (
-    <form onSubmit={handleSignUp} className="form-box">
+    <div className="auth-form-box">
       <h2>Create Account</h2>
-      <input name="username" placeholder="Username" onChange={handleChange} required />
-      <input type="email" name="email" placeholder="Email" onChange={handleChange} required />
-      <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
-      <input name="phone" placeholder="Phone" onChange={handleChange} />
-      <input name="age" placeholder="Age" type="number" onChange={handleChange} />
-      <select name="sign_up_as" onChange={handleChange}>
-        <option>Select Role</option>
-        <option>Loan Borrower</option>
-        <option>Merchant</option>
-        <option>NBFC Admin</option>
-      </select>
-      <button type="submit">Sign Up</button>
-      <p>
-        Already a user? <span onClick={onSwitch}>Sign In</span>
-      </p>
-    </form>
+      <p>Fill in your details to create an account.</p>
+
+      <form onSubmit={handleSignUp}>
+        <label>Username *</label>
+        <input name="username" placeholder="Enter username" onChange={handleChange} required />
+
+        <label>Email *</label>
+        <input type="email" name="email" placeholder="Enter email" onChange={handleChange} required />
+
+        <label>Password *</label>
+        <input type="password" name="password" placeholder="Enter password" onChange={handleChange} required />
+
+        <label>Phone</label>
+        <input name="phone" placeholder="Phone number" onChange={handleChange} />
+
+        <label>Age</label>
+        <input name="age" placeholder="Age" type="number" onChange={handleChange} />
+
+        <label>Select Role *</label>
+        <select name="sign_up_as" onChange={handleChange} required>
+          <option disabled>Select Role</option>
+          <option>Loan Borrower</option>
+          <option>Merchant</option>
+          <option>NBFC Admin</option>
+        </select>
+
+        <button type="submit" className="auth-button">Sign Up</button>
+      </form>
+
+      <div className="toggle-auth">
+        Already a user?{" "}
+        <button type="button" onClick={onSwitch}>
+          Sign In
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { supabase } from "../supabase";
 import { useNavigate } from "react-router-dom";
+import "./Auth.css"; // ✅ Import the CSS file
 
 const SignIn = ({ onSwitch }) => {
   const [email, setEmail] = useState("");
@@ -48,7 +49,7 @@ const SignIn = ({ onSwitch }) => {
     if (!userEmail) return;
 
     const { error } = await supabase.auth.resetPasswordForEmail(userEmail, {
-      redirectTo: "http://localhost:5173/update-password", // Update based on your environment
+      redirectTo: "http://localhost:5173/update-password",
     });
 
     if (error) {
@@ -59,43 +60,53 @@ const SignIn = ({ onSwitch }) => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="form-box">
-        <h2>Sign In</h2>
-        <form onSubmit={handleSignIn} className="form-fields">
-          <input
-            type="email"
-            placeholder="Email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {roleError && <p className="error">{roleError}</p>}
-          <button type="submit">Login</button>
-        </form>
+    <div className="auth-form-box">
+      <h2>Welcome back!</h2>
+      <p>Enter to get unlimited access to data & information.</p>
 
-        <p className="text-sm text-right">
-          <button
-            type="button"
-            onClick={handleForgotPassword}
-            className="text-blue-600 hover:underline"
-          >
-            Forgot Password?
-          </button>
-        </p>
+      <form onSubmit={handleSignIn}>
+        <label>Email *</label>
+        <input
+          type="email"
+          placeholder="Enter your mail address"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-        <span onClick={onSwitch}>New user? Create account</span>
+        <label>Password *</label>
+        <input
+          type="password"
+          placeholder="Enter password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        {roleError && <p className="error">{roleError}</p>}
+
+        <div className="auth-links">
+          <label>
+            <input type="checkbox" style={{ marginRight: "6px" }} /> Remember me
+          </label>
+          <a href="#" onClick={handleForgotPassword}>
+            Forgot your password?
+          </a>
+        </div>
+
+        <button type="submit" className="auth-button">
+          Log In
+        </button>
+      </form>
+
+      <div className="toggle-auth">
+        Don't have an account?{" "}
+        <button type="button" onClick={onSwitch}>
+          Register here
+        </button>
       </div>
     </div>
   );
 };
 
 export default SignIn;
-  
